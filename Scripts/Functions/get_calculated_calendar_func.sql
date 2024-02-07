@@ -9,22 +9,22 @@ begin
 	
 		with
 		period as (
-		     select
+			select
 				d.date
-		       from generate_series(p_date_from, p_date_to, '1 day'::interval) d
-		    )
+			from generate_series(p_date_from, p_date_to, '1 day'::interval) d
+			)
 		, months as (
-		     select
+			select
 				row_number() over () as month_number,
-		        t.month_short_name
-		       from ( select string_to_table('янв,фев,мар,апр,май,июн,июл,авг,сен,окт,ноя,дек', ',') as month_short_name) t
-		    )
+			t.month_short_name
+			from ( select string_to_table('янв,фев,мар,апр,май,июн,июл,авг,сен,окт,ноя,дек', ',') as month_short_name) t
+			)
 		, days as (
-		     select
+			select
 				row_number() over () as day_number,
-		        t.day_short_name
-		       from ( select string_to_table('пн,вт,ср,чт,пт,сб,вс', ',') as day_short_name) t
-		    )
+				t.day_short_name
+			from ( select string_to_table('пн,вт,ср,чт,пт,сб,вс', ',') as day_short_name) t
+			)
 		select
 			p.date,
 			m.month_short_name,

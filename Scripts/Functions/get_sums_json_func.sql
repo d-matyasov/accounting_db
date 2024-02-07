@@ -1,19 +1,19 @@
 create or replace function get_sums_json(p_id integer)
- returns jsonb
- language plpgsql
+	returns jsonb
+	language plpgsql
 as $function$
 
 	declare
 
 		v_date date;
-    	v_index_by_date integer;
-        result jsonb;
+		v_index_by_date integer;
+		result jsonb;
 
 	begin
-	   
-	   	select max(o.date), max(o.index_by_date) into v_date, v_index_by_date from operation o where p_id in (o.id, o.pair_operation_id);
-	   
-	   	select 
+		
+		select max(o.date), max(o.index_by_date) into v_date, v_index_by_date from operation o where p_id in (o.id, o.pair_operation_id);
+		
+		select 
 			jsonb_object_agg(param_name, sum) into result
 		from (
 			select
@@ -38,9 +38,9 @@ as $function$
 				id
 			) q;
 		
-	    return result;
-	   
-    end;
-   
+		return result;
+		
+	end;
+	
 $function$
 ;

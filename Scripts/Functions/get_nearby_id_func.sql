@@ -1,37 +1,37 @@
 create or replace function get_nearby_id(p_id integer, p_direction integer)
- returns integer
- language plpgsql
+	returns integer
+	language plpgsql
 as $function$
 
-    declare
+declare
 
-    	v_date date;
-    	v_index_by_date integer;
-    	v_sort_direction text;
-    	v_comparison_sign text;
-        q text;
-        result integer;
-       
-    begin
-	    
-	    if p_direction not in (-1, 1)
-			then raise exception 'Параметр p_direction должен быть одним из: -1, 1 (предыдущая или следующая соответственно).';
-		end if;
-	    
-	    v_date = (select date from operation where id = p_id);
-	   	v_index_by_date = (select index_by_date from operation where id = p_id);
-	    
-	   	if p_direction = -1
-	   	then
-	   		v_sort_direction = 'desc';
-	   		v_comparison_sign = '<';
-	   	elsif p_direction = 1
-	   	then
-	   		v_sort_direction = 'asc';
-	   		v_comparison_sign = '>';
-	   	end if;
-	   
-    	q = 'select id from (
+	v_date date;
+	v_index_by_date integer;
+	v_sort_direction text;
+	v_comparison_sign text;
+	q text;
+result integer;
+
+begin
+	
+	if p_direction not in (-1, 1)
+		then raise exception 'Параметр p_direction должен быть одним из: -1, 1 (предыдущая или следующая соответственно).';
+	end if;
+	
+	v_date = (select date from operation where id = p_id);
+	v_index_by_date = (select index_by_date from operation where id = p_id);
+	
+	if p_direction = -1
+	then
+		v_sort_direction = 'desc';
+		v_comparison_sign = '<';
+	elsif p_direction = 1
+	then
+		v_sort_direction = 'asc';
+		v_comparison_sign = '>';
+	end if;
+	
+	q = 'select id from (
 				select
 					row_number() over(order by o.date %sort_direction%, index_by_date %sort_direction%)
 					, o.id
@@ -49,13 +49,13 @@ as $function$
 			where
 				row_number = 1';
 		
-		q = replace(q, '%sort_direction%', v_sort_direction);
-		q = replace(q, '%comparison_sign%', v_comparison_sign);
-    
-		execute q using v_date, v_index_by_date into result;
-	    return result;
-	   
-    end;
-   
+	q = replace(q, '%sort_direction%', v_sort_direction);
+	q = replace(q, '%comparison_sign%', v_comparison_sign);
+
+	execute q using v_date, v_index_by_date into result;
+	return result;
+	
+end;
+
 $function$
 ;

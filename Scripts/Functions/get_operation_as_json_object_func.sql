@@ -1,6 +1,6 @@
 create or replace function get_operation_as_json_object(p_date_from date default null::date, p_date_to date default null::date, p_id integer default null::integer)
- returns table("row" jsonb, date date, id integer, pair_operation_id integer, index_by_date integer, po_index_by_date integer)
- language plpgsql
+	returns table("row" jsonb, date date, id integer, pair_operation_id integer, index_by_date integer, po_index_by_date integer)
+	language plpgsql
 as $function$
 
 declare
@@ -32,7 +32,7 @@ begin
 	where
 		row_number = 1;
 
-	if (p_date_from is not null and v_last_fact_operation_date between p_date_from and coalesce(p_date_to, v_last_fact_operation_date)) or p_id is not null
+	if p_date_from is not null and v_last_fact_operation_date between p_date_from and coalesce(p_date_to, v_last_fact_operation_date)
 		then
 			select
 				q.id into v_show_facts_operation_id
@@ -78,8 +78,8 @@ begin
 					jsonb_build_object(
 						'id', o.id
 						, 'pairOperationId', po.id
-						, 'month', case when (row_number() over(partition by c.month_short_name order by c.date)) = 1 then c.month_short_name else null end
-						, 'week', case when (row_number() over(partition by c.week_number order by c.date)) = 1 then c.week_number::text else null end
+						, 'month', case when (row_number() over(partition by c.month_short_name order by c.date, o.index_by_date)) = 1 then c.month_short_name else null end
+						, 'week', case when (row_number() over(partition by c.week_number order by c.date, o.index_by_date)) = 1 then c.week_number::text else null end
 						, 'day', c.day_short_name
 						, 'date', c.date
 						, 'indexByDate', o.index_by_date
@@ -100,8 +100,8 @@ begin
 				then
 					jsonb_build_object(
 						'id', o.id
-						, 'month', case when (row_number() over(partition by c.month_short_name order by c.date)) = 1 then c.month_short_name else null end
-						, 'week', case when (row_number() over(partition by c.week_number order by c.date)) = 1 then c.week_number::text else null end
+						, 'month', case when (row_number() over(partition by c.month_short_name order by c.date, o.index_by_date)) = 1 then c.month_short_name else null end
+						, 'week', case when (row_number() over(partition by c.week_number order by c.date, o.index_by_date)) = 1 then c.week_number::text else null end
 						, 'day', c.day_short_name
 						, 'date', c.date
 						, 'indexByDate', o.index_by_date
@@ -145,13 +145,13 @@ begin
 												coalesce(max(o_1.date), (select min(operation.date) as min from operation)) as "coalesce"
 											from
 												operation o_1
-		         							where
+											where
 												o_1.is_fact = true
 												and not exists (select 1 from operation o1 where o1.date < o_1.date and o1.is_fact = false)
 											)
-			   )
+				)
 			)
-		    and ((case when p_date_from is null then 1 else 0 end) = 1 or c.date >= p_date_from)
+			and ((case when p_date_from is null then 1 else 0 end) = 1 or c.date >= p_date_from)
 			and ((case when p_date_to is null then 1 else 0 end) = 1 or c.date <= p_date_to)
 			and ((case when p_id is null then 1 else 0 end) = 1 or o.id = p_id)
 		
@@ -174,6 +174,7 @@ begin
 			operation o
 		where 
 			o.id = v_show_facts_operation_id
+			and v_facts_json is not null
 		;
 end; 
 

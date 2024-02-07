@@ -1,5 +1,5 @@
 create or replace procedure recalculate_current_amount(p_accounting_object_id integer default null::integer)
- language plpgsql
+	language plpgsql
 as $procedure$
 
 	declare
@@ -11,9 +11,9 @@ as $procedure$
 
 	begin
 
-	    if p_accounting_object_id is null
-	    	then v_accounting_object_ids = (select 
-												array_agg(ao.id) 
+	if p_accounting_object_id is null
+			then v_accounting_object_ids = (select
+												array_agg(ao.id)
 											from
 												accounting_object ao);
 			else v_accounting_object_ids = array[p_accounting_object_id];
@@ -28,9 +28,9 @@ as $procedure$
 		
 			update accounting_object set current_amount = v_start_amount + coalesce(v_sum, 0) where id = x;
 			
-	   end loop;
-	  
-    end;
-   
+		end loop;
+		
+end;
+	
 $procedure$
 ;

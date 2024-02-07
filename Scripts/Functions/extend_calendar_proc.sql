@@ -1,5 +1,5 @@
 create or replace procedure extend_calendar(p_date_from date, p_date_to date)
- language plpgsql
+	language plpgsql
 as $procedure$
 
 	declare 
@@ -8,7 +8,7 @@ as $procedure$
 		v_dates_count integer;
 		v_calendar_dates_count integer;
 		
-    begin
+begin
 
 		select
 			count(d.date) into v_dates_count
@@ -23,7 +23,7 @@ as $procedure$
 			c.date >= p_date_from
 			and c.date <= p_date_to;
 		
-	    if v_dates_count <> v_calendar_dates_count
+	if v_dates_count <> v_calendar_dates_count
 			then
 				insert into calendar (date, month_short_name, week_number, day_short_name, day_type)
 										select
@@ -37,9 +37,9 @@ as $procedure$
 										where 
 											cc.date not in (select date from calendar where	date >= p_date_from and date <= p_date_to);
 			
-	    end if;
-	   
-    end;
-   
+	end if;
+	
+end;
+
 $procedure$
 ;

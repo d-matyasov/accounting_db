@@ -1,6 +1,6 @@
 create or replace function get_facts_row_as_json_object(p_date_from date default null::date, p_date_to date default null::date)
- returns table("row" jsonb, date date, id integer, pair_operation_id integer, index_by_date integer, po_index_by_date integer)
- language plpgsql
+	returns table("row" jsonb, date date, id integer, pair_operation_id integer, index_by_date integer, po_index_by_date integer)
+	language plpgsql
 as $function$
 
 	declare
@@ -62,7 +62,7 @@ as $function$
 					) q;
 		end if;
 	
-	    return query
+		return query
 			
 			select
 				json_build_object(
